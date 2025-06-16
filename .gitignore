@@ -33,3 +33,6 @@ _ReSharper*/
 *.DotSettings.user
 .idea/
 *.sln.ide
+# Qdrant data volume
+src/AppHost/qdrant_data/
+src/AppHost/qdrant_data/*
