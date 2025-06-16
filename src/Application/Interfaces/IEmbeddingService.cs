@@ -1,6 +1,7 @@
-namespace Application.Interfaces;
-
-public interface IEmbeddingService
+namespace Application.Interfaces
 {
-    Task<float[]> GenerateEmbeddingAsync(string text);
+    public interface IEmbeddingService
+    {
+        Task<float[]> GenerateEmbeddingAsync(string text);
+    }
 }

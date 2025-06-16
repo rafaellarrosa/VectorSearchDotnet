@@ -1,11 +1,15 @@
 using System;
+using Application.DTOs;
 using Domain.Entities;
 
-namespace Application.Interfaces;
-
-public interface IVectorDatabaseService
+namespace Application.Interfaces
 {
-    Task IndexDocumentAsync(Document doc);
+    public interface IVectorDatabaseService
+    {
+        Task CreateCollectionAsync(int vectorSize, string collectionName = null!, string distance = "Cosine");
 
-    Task<List<Document>> SearchSimilarAsync(float[] embedding, int topK = 5);
+        Task IndexDocumentAsync(DocumentDto doc);
+
+        Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5);
+    }
 }
