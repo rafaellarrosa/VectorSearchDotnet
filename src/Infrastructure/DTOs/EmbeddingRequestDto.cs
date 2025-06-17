@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace Infrastructure.DTOs
 {
     public class EmbeddingRequestDto
     {
-        public string Text { get; set; } = string.Empty;
+        public string text { get; set; } = string.Empty;
     }
 }

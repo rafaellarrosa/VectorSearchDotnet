@@ -7,6 +7,6 @@ namespace Infrastructure.Clients
     public interface IEmbeddingApi
     {
         [Post("/embed")]
-        Task<EmbeddingResponseDto> EmbedAsync([Body] EmbeddingRequestDto request);
+        Task<EmbeddingResponseDto> EmbedAsync([Body] object request);
     }
 }

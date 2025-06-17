@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Application.Interfaces;
 using Infrastructure.Clients;
 using Infrastructure.Services.Embedding;
@@ -17,11 +19,18 @@ namespace Infrastructure
             services.Configure<QdrantOptions>(configuration.GetSection("QdrantOptions"));
 
             // Registra o cliente HTTP para a API de embedding
-            services.AddRefitClient<IEmbeddingApi>()
-                .ConfigureHttpClient(client =>
+            services.AddRefitClient<IEmbeddingApi>(new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
                 {
-                    client.BaseAddress = new Uri(configuration["EmbeddingOptions:BaseUrl"] ?? throw new ArgumentNullException("EmbeddingOptions:BaseUrl", "BaseUrl for EmbeddingOptions is not configured."));
-                });
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                })
+            })
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri(configuration["EmbeddingOptions:BaseUrl"] ?? throw new ArgumentNullException("EmbeddingOptions:BaseUrl", "BaseUrl for EmbeddingOptions is not configured."));
+            });
 
             // Registra o cliente HTTP para a API do Qdrant usando Refit
             services.AddRefitClient<IQdrantApi>()
