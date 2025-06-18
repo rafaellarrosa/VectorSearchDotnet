@@ -31,9 +31,11 @@ public class IndexDocumentCommandHandler(IVectorDatabaseService qdrantService, I
             _logger?.LogError("Failed to generate embedding for text: {Text}", request.Text);
 
             throw new InvalidOperationException("Failed to generate embedding.");
-        }
-
-        await _qdrantService.IndexDocumentAsync(new DocumentDto(request.Text, embedding));
+        }        await _qdrantService.IndexDocumentAsync(new DocumentDto(
+            Guid.NewGuid().ToString(),
+            request.Text, 
+            embedding,
+            DateTime.UtcNow));
 
         _logger?.LogInformation("Document indexed successfully for text: {Text}", request.Text);
 
