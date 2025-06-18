@@ -1,6 +1,7 @@
 using Infrastructure.DTOs;
 using Refit;
 using System.Threading.Tasks;
+using Infrastructure.DTOs.Embedding;
 
 namespace Infrastructure.Clients
 {

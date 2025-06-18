@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Services.Qdrant;
+﻿namespace Infrastructure.Configurations;
 
 public class QdrantOptions
 {

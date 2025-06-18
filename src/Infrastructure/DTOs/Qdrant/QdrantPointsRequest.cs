@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Infrastructure.DTOs;
+namespace Infrastructure.DTOs.Qdrant;
 
 public class QdrantPointsRequestDto
 {
