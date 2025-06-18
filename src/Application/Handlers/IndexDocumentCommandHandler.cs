@@ -1,11 +1,10 @@
-using System;
-using MediatR;
-using System.Threading;
-using Application.Interfaces;
+using Application.Commands;
 using Application.DTOs;
+using Application.Interfaces;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Commands;
+namespace Application.Handlers;
 
 public class IndexDocumentCommandHandler(IVectorDatabaseService qdrantService, IEmbeddingService embeddingService, ILogger<IndexDocumentCommandHandler> logger) : IRequestHandler<IndexDocumentCommand, Unit>
 {

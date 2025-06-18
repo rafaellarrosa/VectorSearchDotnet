@@ -1,94 +1,69 @@
 using Application.DTOs;
 using Application.Interfaces;
-using Domain.Entities;
-using Infrastructure.Clients;
-using Infrastructure.DTOs;
+using Infrastructure.DTOs.Qdrant;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Refit;
+using System.Net.Http.Json;
+using Infrastructure.Configurations;
 
-namespace Infrastructure.Services.Qdrant
+namespace Infrastructure.Services.Qdrant;
+
+public class QdrantService(HttpClient httpClient, IOptions<QdrantOptions> options, ILogger<QdrantService> logger, IConfiguration configuration) : IVectorDatabaseService
 {
-    public partial class QdrantService(IQdrantApi qdrantApi, IOptions<QdrantOptions> options, ILogger<QdrantService> logger) : IVectorDatabaseService
+    private readonly QdrantOptions _options = options.Value;
+
+    public async Task IndexDocumentAsync(DocumentDto doc)
     {
-        private readonly QdrantOptions _options = options.Value;
-        private readonly IQdrantApi _qdrantApi = qdrantApi;
-        private readonly ILogger<QdrantService> _logger = logger;
+        var baseUrl = configuration["QdrantOptions:BaseUrl"];
+        if (string.IsNullOrEmpty(baseUrl))
+            throw new InvalidOperationException("QdrantOptions:BaseUrl is not configured");
 
-        public async Task CreateCollectionAsync(int vectorSize, string collectionName = null!, string distance = "Cosine")
+        var point = new QdrantPointDto
         {
-            var request = new QdrantCreateCollectionRequestDto
-            {
-                vectors = new VectorsConfig
-                {
-                    size = vectorSize,
-                    distance = distance
-                }
-            };
+            Id = $"{doc.Id}",
+            Vector = doc.Embedding,
+            Payload = new QdrantPayloadDto { Text = doc.Text }
+        };
 
-            _logger?.LogInformation("Creating Qdrant collection {Collection} with vector size {VectorSize} and distance {Distance}", collectionName ?? _options.CollectionName, vectorSize, distance);
-
-            await _qdrantApi.CreateCollectionAsync(collectionName ?? _options.CollectionName, request);
-
-            _logger?.LogInformation("Collection {Collection} created successfully.", collectionName ?? _options.CollectionName);
-        }
-
-        public async Task IndexDocumentAsync(DocumentDto doc)
+        var request = new QdrantPointsRequestDto
         {
-            var point = new QdrantPointDto
-            {
-                Id = $"{doc.Id}",
-                Vector = doc.Embedding,
-                Payload = new QdrantPayloadDto { Text = doc.Text }
-            };
+            Points = [point]
+        };
 
-            var request = new QdrantPointsRequestDto
-            {
-                Points = [point]
-            };
+        var url = $"{baseUrl.TrimEnd('/')}/collections/{_options.CollectionName}/points?wait=true";
 
-            var strRequest = System.Text.Json.JsonSerializer.Serialize(request);
+        logger?.LogDebug("Indexing document {Id} in Qdrant: {Request}", doc.Id, System.Text.Json.JsonSerializer.Serialize(request));
 
-            _logger?.LogDebug("Indexing document {Id} in Qdrant: {Request}", doc.Id, strRequest);
+        var response = await httpClient.PutAsJsonAsync(url, request);
 
-            try
-            {
-                await _qdrantApi.AddPointsAsync(_options.CollectionName, request);
-            }
-            catch (ApiException ex)
-            {
-                _logger?.LogError(ex, "Failed to index document {Id} in Qdrant: {Message}", doc.Id, ex.Message);
-                throw new Exception($"Failed to index document: {ex.Message}", ex);
-            }
-        }
+        response.EnsureSuccessStatusCode();
+    }
 
-        public async Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5)
+    public async Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5)
+    {
+        var baseUrl = configuration["QdrantOptions:BaseUrl"];
+        if (string.IsNullOrEmpty(baseUrl))
+            throw new InvalidOperationException("QdrantOptions:BaseUrl is not configured");
+
+        var request = new QdrantSearchRequestDto
         {
-            try
-            {
-                var request = new QdrantSearchRequestDto
-                {
-                    Vector = embedding
-                };
-                var json = System.Text.Json.JsonSerializer.Serialize(request);
+            Vector = embedding,
+            Top = topK
+        };
 
-                _logger?.LogDebug("Searching similar documents in Qdrant: {Request}", json);
+        var url = $"{baseUrl.TrimEnd('/')}/collections/{_options.CollectionName}/points/search";
 
-                var response = await _qdrantApi.SearchPointsAsync(_options.CollectionName, request);
+        logger?.LogDebug("Searching similar documents in Qdrant: {Request}", System.Text.Json.JsonSerializer.Serialize(request));
 
-                _logger?.LogInformation("Search completed in Qdrant. Found {Count} results.", response.Result.Count);
+        var response = await httpClient.PostAsJsonAsync(url, request);
 
-                return [.. response.Result.Select(r => new DocumentResposeDto
-                (
-                    Guid.Parse(r.Id),
-                    r.Payload?.Text ?? string.Empty
-                ))];
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Failed to search similar documents in Qdrant: {Message}", ex.Message);
-                throw new Exception("Failed to search similar documents. Please check the Qdrant service and your connection settings.", ex);
-            }
-        }
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<QdrantSearchResponseDto>();
+
+        logger?.LogInformation("Search completed in Qdrant. Found {Count} results.", result?.Result.Count ?? 0);
+
+        return result?.Result.Select(r => new DocumentResposeDto(Guid.Parse(r.Id), r.Payload?.Text ?? string.Empty)).ToList() ?? new();
     }
 }

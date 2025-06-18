@@ -1,4 +1,4 @@
-namespace Infrastructure.DTOs
+namespace Infrastructure.DTOs.Embedding
 {
     public class EmbeddingResponse
     {

@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace Infrastructure.DTOs;
+namespace Infrastructure.DTOs.Qdrant;
 
 public class QdrantSearchResponseDto
 {

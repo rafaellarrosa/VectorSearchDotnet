@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Queries;
 
-public class SearchSimilarDocumentsQuery(string query) : IRequest<IEnumerable<DocumentResposeDto>?>
+public class SearchSimilarDocumentsQuery(string query) : IRequest<string>
 {
     public string SearchQuery { get; private set; } = query;
 }

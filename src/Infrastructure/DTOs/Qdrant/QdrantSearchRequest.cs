@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Infrastructure.DTOs;
+namespace Infrastructure.DTOs.Qdrant;
 
 public class QdrantSearchRequestDto
 {    public required float[] Vector { get; set; }

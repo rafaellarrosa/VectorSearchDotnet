@@ -6,8 +6,6 @@ namespace Application.Interfaces
 {
     public interface IVectorDatabaseService
     {
-        Task CreateCollectionAsync(int vectorSize, string collectionName = null!, string distance = "Cosine");
-
         Task IndexDocumentAsync(DocumentDto doc);
 
         Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5);

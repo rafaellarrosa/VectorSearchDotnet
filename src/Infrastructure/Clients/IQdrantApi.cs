@@ -1,4 +1,5 @@
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Qdrant;
 using Refit;
 
 namespace Infrastructure.Clients;
