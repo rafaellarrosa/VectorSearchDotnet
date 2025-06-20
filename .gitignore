@@ -36,3 +36,5 @@ _ReSharper*/
 # Qdrant data volume
 src/AppHost/qdrant_data/
 src/AppHost/qdrant_data/*
+src/AppHost/neo4j_data/
+src/AppHost/neo4j_data/*

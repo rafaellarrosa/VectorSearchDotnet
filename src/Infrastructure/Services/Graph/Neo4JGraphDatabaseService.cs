@@ -10,12 +10,12 @@ using Neo4j.Driver;
 
 namespace Infrastructure.Services.Graph
 {
-    public class Neo4jGraphDatabaseService : IGraphDatabaseService, IAsyncDisposable
+    public class Neo4JGraphDatabaseService : IGraphDatabaseService, IAsyncDisposable
     {
         private readonly IDriver _driver;
-        private readonly ILogger<Neo4jGraphDatabaseService> _logger;
+        private readonly ILogger<Neo4JGraphDatabaseService> _logger;
 
-        public Neo4jGraphDatabaseService(IConfiguration configuration, ILogger<Neo4jGraphDatabaseService> logger)
+        public Neo4JGraphDatabaseService(IConfiguration configuration, ILogger<Neo4JGraphDatabaseService> logger)
         {
             var uri = configuration["GraphDatabase:Uri"] ?? throw new ArgumentNullException("GraphDatabase:Uri", "GraphDatabase URI is not configured.");
             var username = configuration["GraphDatabase:Username"] ?? throw new ArgumentNullException("GraphDatabase:Username", "GraphDatabase Username is not configured.");

@@ -5,6 +5,6 @@ namespace Application.Commands;
 
 public class CreateGraphNodeCommand : IRequest
 {
-        public string Label { get; set; }
-        public Dictionary<string, object> Properties { get; set; }
+    public string Label { get; set; }
+    public Dictionary<string, object> Properties { get; set; }
 }

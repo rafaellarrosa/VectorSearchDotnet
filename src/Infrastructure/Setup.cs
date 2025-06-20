@@ -26,7 +26,7 @@ public static class Setup
         services.AddHttpClient<IIaService, HuggingFaceService>();
         services.AddScoped<IIaService, HuggingFaceService>();
 
-        services.AddScoped<IGraphDatabaseService, Neo4jGraphDatabaseService>();
+        services.AddScoped<IGraphDatabaseService, Neo4JGraphDatabaseService>();
         services.AddScoped<SeedService>();
     }
 }
