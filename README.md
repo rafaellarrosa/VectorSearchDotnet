@@ -1,18 +1,19 @@
 # VectorSearchDotnet 🧠 (RAG + Graph Full Stack)
 
-**VectorSearchDotnet** é um projeto completo de **Retrieval-Augmented Generation (RAG)** com IA Generativa, Embeddings e Banco de Grafos, 100% em .NET 8 e Clean Architecture.
+**VectorSearchDotnet** é um projeto completo de **Retrieval-Augmented Generation (RAG)** com IA Generativa, Embeddings, Banco de Grafos e Vetores, 100% em .NET 8 e Clean Architecture.
 
 ---
 
 ### 🔧 Tecnologias Utilizadas
 
-- ✅ .NET 8 (Minimal APIs)
+- ✅ .NET 8 (Minimal APIs com Aspire)
 - ✅ Clean Architecture (Domain, Application, Infrastructure, WebAPI)
-- ✅ Aspire (.NET Distributed Application)
 - ✅ Docker (Orquestração local completa)
 - ✅ Qdrant (Vector Database)
 - ✅ Neo4j (Graph Database)
-- ✅ Hugging Face Inference API (Embeddings e Text Generation)
+- ✅ Azure Functions (Python Embedding Service)
+- ✅ Sentence-Transformers (via Azure Function)
+- ✅ Hugging Face Inference API (Geração RAG com Mistral-7B)
 - ✅ Refit (HTTP client de alto nível)
 - ✅ MediatR, AutoMapper, Serilog
 - ✅ Testes com xUnit, FluentAssertions e NSubstitute
@@ -22,13 +23,21 @@
 ## 🧠 Arquitetura Completa
 
 ```mermaid
-graph TD
-    A[Usuário] -->|Pergunta| B[WebAPI (.NET)]
-    B -->|Gera Embedding| C[Hugging Face API]
-    B -->|Busca Semântica| D[Qdrant]
-    B -->|Recupera Relações| E[Neo4j]
-    B -->|Geração RAG| F[Hugging Face Text Generation]
-    F -->|Resposta| A
+---
+config:
+  layout: fixed
+---
+flowchart TD
+    A["Usuário"] -->|Faz Pergunta| B["WebAPI (.NET Aspire)"]
+    B -->|Gera Embedding| C["Azure Function<br>(Python + Sentence-Transformers)"]
+    B -->|Realiza Busca Semântica| D["Qdrant"]
+    B -->|Realiza Enriquecimento| E["Neo4j"]
+    B -->|Executa Geração RAG| F["Hugging Face<br>(Mistral-7B)"]
+    F -->|Retorna Resposta| A
+
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef highlight fill:#a0c4ff,stroke:#333,stroke-width:2px;
+    class B,C,D,E,F highlight;
 ```
 
 ---
@@ -58,11 +67,11 @@ http://localhost:{porta}/swagger
 
 ## 🔗 Integrações Externas
 
-- **Hugging Face Inference API**
+- **Azure Functions (Python)**  
+  - Embedding gerado com `sentence-transformers/all-mpnet-base-v2` localmente
 
-  - Embedding model: `sentence-transformers/all-mpnet-base-v2`
-  - Text Generation model: `mistralai/Mistral-7B-Instruct-v0.1`\
-    (Configuração via appsettings + Token HF)
+- **Hugging Face Inference API**
+  - Modelo generativo: `mistralai/Mistral-7B-Instruct-v0.1`
 
 - **Qdrant** (Docker com volume persistente)
 
@@ -81,10 +90,10 @@ http://localhost:{porta}/swagger
 
 ## 🔬 Pipeline do RAG com Graph
 
-1️⃣ Gera embedding da pergunta com Hugging Face\
-2️⃣ Busca vetorial no Qdrant\
-3️⃣ Recupera contexto e conexões via Neo4j\
-4️⃣ Monta resposta com modelo generativo RAG
+1️⃣ Azure Function gera embedding via Sentence-Transformers  
+2️⃣ Busca vetorial no Qdrant  
+3️⃣ Enriquecimento com relações no Neo4j  
+4️⃣ Gera resposta final com Hugging Face Mistral-7B
 
 ---
 
@@ -112,6 +121,5 @@ Este projeto é uma fundação para:
 
 ## 👨‍💻 Autor
 
-**Rafael Larrosa**\
+**Rafael Larrosa**  
 [GitHub](https://github.com/rafaellarrosa)
-
