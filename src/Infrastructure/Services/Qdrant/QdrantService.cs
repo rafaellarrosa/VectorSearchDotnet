@@ -13,7 +13,7 @@ public class QdrantService(HttpClient httpClient, IOptions<QdrantOptions> option
 {
     private readonly QdrantOptions _options = options.Value;
 
-    public async Task IndexDocumentAsync(DocumentDto doc)
+    public async Task<Guid> IndexDocumentAsync(DocumentDto doc)
     {
         var baseUrl = configuration["QdrantOptions:BaseUrl"];
         if (string.IsNullOrEmpty(baseUrl))
@@ -38,6 +38,8 @@ public class QdrantService(HttpClient httpClient, IOptions<QdrantOptions> option
         var response = await httpClient.PutAsJsonAsync(url, request);
 
         response.EnsureSuccessStatusCode();
+
+        return doc.Id;
     }
 
     public async Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5)

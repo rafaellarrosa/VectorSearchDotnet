@@ -6,10 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Handlers;
 
-public class IndexDocumentCommandHandler(IVectorDatabaseService qdrantService, IEmbeddingService embeddingService, ILogger<IndexDocumentCommandHandler> logger) : IRequestHandler<IndexDocumentCommand, Unit>
+public class IndexDocumentCommandHandler(IVectorDatabaseService qdrantService, IEmbeddingService embeddingService, IGraphDatabaseService graphDatabaseService, ILogger<IndexDocumentCommandHandler> logger) : IRequestHandler<IndexDocumentCommand, Unit>
 {
     private readonly IVectorDatabaseService _qdrantService = qdrantService ?? throw new ArgumentNullException(nameof(qdrantService));
     private readonly IEmbeddingService _embeddingService = embeddingService ?? throw new ArgumentNullException(nameof(embeddingService));
+    private readonly IGraphDatabaseService _graphDatabaseService = graphDatabaseService ?? throw new ArgumentNullException(nameof(graphDatabaseService));
     private readonly ILogger<IndexDocumentCommandHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task<Unit> Handle(IndexDocumentCommand request, CancellationToken cancellationToken)
@@ -32,9 +33,25 @@ public class IndexDocumentCommandHandler(IVectorDatabaseService qdrantService, I
             throw new InvalidOperationException("Failed to generate embedding.");
         }
 
-        await _qdrantService.IndexDocumentAsync(new DocumentDto(request.Text, embedding));
+        var documentId = await _qdrantService.IndexDocumentAsync(new DocumentDto(request.Text, embedding));
 
         _logger?.LogInformation("Document indexed successfully for text: {Text}", request.Text);
+
+        try
+        {
+            await _graphDatabaseService.CreateNodeAsync("Document", new Dictionary<string, object>
+            {
+                { "Id", $"{documentId}" },
+                { "Title", request.Title },
+                { "Content", request.Text }
+            });
+
+            _logger?.LogInformation("Node created successfully in graph database for document ID: {Id}", documentId);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to create node in graph database for document ID: {Id}", documentId);
+        }
 
         return Unit.Value;
     }

@@ -6,7 +6,7 @@ namespace Application.Interfaces
 {
     public interface IVectorDatabaseService
     {
-        Task IndexDocumentAsync(DocumentDto doc);
+        Task<Guid> IndexDocumentAsync(DocumentDto doc);
 
         Task<List<DocumentResposeDto>> SearchSimilarAsync(float[] embedding, int topK = 5);
     }

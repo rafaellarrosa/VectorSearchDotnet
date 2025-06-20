@@ -1,6 +1,8 @@
 using Application.Interfaces;
 using Infrastructure.Configurations;
+using Infrastructure.Seed;
 using Infrastructure.Services.Embedding;
+using Infrastructure.Services.Graph;
 using Infrastructure.Services.HuggingFace;
 using Infrastructure.Services.Qdrant;
 using Microsoft.Extensions.Configuration;
@@ -23,5 +25,8 @@ public static class Setup
 
         services.AddHttpClient<IIaService, HuggingFaceService>();
         services.AddScoped<IIaService, HuggingFaceService>();
+
+        services.AddScoped<IGraphDatabaseService, Neo4jGraphDatabaseService>();
+        services.AddScoped<SeedService>();
     }
 }

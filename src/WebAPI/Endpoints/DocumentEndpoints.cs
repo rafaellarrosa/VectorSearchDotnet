@@ -1,6 +1,7 @@
 using System;
 using Application.Commands;
 using Application.Queries;
+using Infrastructure.Seed;
 using MediatR;
 
 namespace WebAPI.Endpoints
@@ -9,9 +10,9 @@ namespace WebAPI.Endpoints
     {
         public static void MapDocumentEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapPost("/documents", async (string text, IMediator mediator) =>
+            app.MapPost("/documents", async (string title, string text, IMediator mediator) =>
             {
-                await mediator.Send(new IndexDocumentCommand(text));
+                await mediator.Send(new IndexDocumentCommand(title, text));
                 return Results.Ok(new { message = "Indexed successfully." });
             });
 
@@ -19,6 +20,12 @@ namespace WebAPI.Endpoints
             {
                 var result = await mediator.Send(new SearchSimilarDocumentsQuery(query)); //useCase.ExecuteAsync(query, topK);
                 return Results.Ok(result);
+            });
+
+            app.MapPost("/seed", async (SeedService seedService) =>
+            {
+                await seedService.SeedAsync();
+                return Results.Ok("Seed executado com sucesso.");
             });
         }
     }
