@@ -1,133 +1,117 @@
-# VectorSearchDotnet 🧠
+# VectorSearchDotnet 🧠 (RAG + Graph Full Stack)
 
-**VectorSearchDotnet** is a practical example of using **.NET 8**, **Clean Architecture**, and **vector databases** (Qdrant) to build a **semantic search API with embeddings**.
-
-Built with:
-
-- .NET 8 and Minimal APIs
-- Aspire for local orchestration and container management
-- Clean Architecture (Domain, Application, Infrastructure, WebAPI)
-- Qdrant vector database (Docker, with persistent volume)
-- Embedding integration ready for OpenAI or HuggingFace (e.g., all-MiniLM-L6-v2)
-- Python embedding service using FastAPI + SentenceTransformers (see below)
-- Serilog structured logging
-- Swagger/OpenAPI documentation
-- Tests with xUnit, NSubstitute, FluentAssertions
+**VectorSearchDotnet** é um projeto completo de **Retrieval-Augmented Generation (RAG)** com IA Generativa, Embeddings e Banco de Grafos, 100% em .NET 8 e Clean Architecture.
 
 ---
 
-## Embedding Service (Python)
+### 🔧 Tecnologias Utilizadas
 
-The embedding service is a simple Python project using FastAPI and SentenceTransformers. It exposes an endpoint to generate embeddings from text using a specific model (e.g., `all-MiniLM-L6-v2` or `all-mpnet-base-v2`).
+- ✅ .NET 8 (Minimal APIs)
+- ✅ Clean Architecture (Domain, Application, Infrastructure, WebAPI)
+- ✅ Aspire (.NET Distributed Application)
+- ✅ Docker (Orquestração local completa)
+- ✅ Qdrant (Vector Database)
+- ✅ Neo4j (Graph Database)
+- ✅ Hugging Face Inference API (Embeddings e Text Generation)
+- ✅ Refit (HTTP client de alto nível)
+- ✅ MediatR, AutoMapper, Serilog
+- ✅ Testes com xUnit, FluentAssertions e NSubstitute
 
-Example code:
+---
 
-```python
-from fastapi import FastAPI
-from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer
+## 🧠 Arquitetura Completa
 
-app = FastAPI()
-
-# Load the model once
-# model = SentenceTransformer("all-MiniLM-L6-v2")
-model = SentenceTransformer("all-mpnet-base-v2")
-
-class EmbeddingRequest(BaseModel):
-    text: str
-
-@app.post("/embed/")
-def generate_embedding(request: EmbeddingRequest):
-    embedding = model.encode(request.text).tolist()
-    return {"embedding": embedding}
-
-@app.get("/")
-def root():
-    return {"message": "Gerador de embedding com sentence-transformers 🤖"}
+```mermaid
+graph TD
+    A[Usuário] -->|Pergunta| B[WebAPI (.NET)]
+    B -->|Gera Embedding| C[Hugging Face API]
+    B -->|Busca Semântica| D[Qdrant]
+    B -->|Recupera Relações| E[Neo4j]
+    B -->|Geração RAG| F[Hugging Face Text Generation]
+    F -->|Resposta| A
 ```
 
-Este serviço pode ser executado em um container Docker e é consumido pela aplicação .NET via HTTP (Refit). O modelo pode ser facilmente trocado conforme a necessidade, bastando alterar a linha de carregamento do modelo.
-
 ---
 
-## Features
+## 🚀 Como Executar
 
-- Embedding generation (mocked or real, via Python service)
-- Vector storage and similarity search with Qdrant
-- Cosine similarity search
-- Clean separation of concerns (Domain, Application, Infrastructure, WebAPI)
-- API documentation with Swagger
-- Logging with Serilog (console, environment, client info)
-- Orchestration using Aspire AppHost (with Docker)
-- Persistent Qdrant data volume (no data loss on container stop)
-
----
-
-## How to Run
-
-Clone the repository:
+Clone o repositório:
 
 ```bash
 git clone https://github.com/rafaellarrosa/VectorSearchDotnet.git
 cd VectorSearchDotnet
 ```
 
-Run the full stack (API + Qdrant + orchestration):
+Subir toda a stack com Aspire:
 
 ```bash
 dotnet run --project src/AppHost/AppHost.csproj
 ```
 
-Or run only the API:
-
-```bash
-dotnet run --project src/WebAPI/WebAPI.csproj
-```
-
-Open Swagger in your browser:
+Acesse o Swagger para testar:
 
 ```
-http://localhost:{port}/swagger
-```
-
-Run the tests:
-
-```bash
-dotnet test tests/Application.Tests/Application.Tests.csproj
+http://localhost:{porta}/swagger
 ```
 
 ---
 
-## Endpoints
+## 🔗 Integrações Externas
 
-| Method | Route      | Description                               |
-|--------|------------|-------------------------------------------|
-| POST   | /documents | Index a new text into the vector database |
-| GET    | /search    | Search semantically similar texts         |
+- **Hugging Face Inference API**
 
----
+  - Embedding model: `sentence-transformers/all-mpnet-base-v2`
+  - Text Generation model: `mistralai/Mistral-7B-Instruct-v0.1`\
+    (Configuração via appsettings + Token HF)
 
-## Roadmap
+- **Qdrant** (Docker com volume persistente)
 
-- [ ] Integrate with OpenAI or HuggingFace embeddings (e.g., `all-MiniLM-L6-v2`)
-- [ ] Connect to real Qdrant instance (Docker or Cloud)
-- [ ] Add frontend UI (React or Blazor)
-- [ ] Upload and embed content from PDFs or video transcription
-- [ ] Implement vector caching and cold-start protection
-- [ ] Add authentication and authorization
+- **Neo4j** (Docker standalone via Aspire)
 
 ---
 
-## About
+## 🛠️ Endpoints Principais
 
-This project serves as a foundation for building:
-
-- Semantic search APIs
-- Retrieval-Augmented Generation (RAG) systems
-- Smart assistants with contextual memory
-- AI-powered recommendation engines
-- Voice/video-aware applications with transcription-based search
+| Método | Rota       | Função                                 |
+| ------ | ---------- | -------------------------------------- |
+| POST   | /documents | Indexa novo documento (Qdrant + Neo4j) |
+| GET    | /search    | Realiza busca semântica + geração RAG  |
 
 ---
 
-**Author:** [Rafael Larrosa](https://github.com/rafaellarrosa)
+## 🔬 Pipeline do RAG com Graph
+
+1️⃣ Gera embedding da pergunta com Hugging Face\
+2️⃣ Busca vetorial no Qdrant\
+3️⃣ Recupera contexto e conexões via Neo4j\
+4️⃣ Monta resposta com modelo generativo RAG
+
+---
+
+## 🔮 Extensões futuras
+
+- Upload de PDFs e processamento automático
+- Extração de entidades e criação automática de nós no grafo
+- UI frontend (Blazor ou React)
+- Histórico de consultas e dashboard analítico
+- Melhorias no pipeline com CoT (Chain-of-Thought prompting)
+- Cache de embeddings para otimização
+
+---
+
+## 📖 Sobre o projeto
+
+Este projeto é uma fundação para:
+
+- RAG corporativo (jurídico, financeiro, documentos técnicos)
+- Assistentes de IA contextuais
+- Pesquisa semântica híbrida (embedding + grafo)
+- Sistemas de recomendação explicáveis
+
+---
+
+## 👨‍💻 Autor
+
+**Rafael Larrosa**\
+[GitHub](https://github.com/rafaellarrosa)
+
