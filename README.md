@@ -1,20 +1,18 @@
-# VectorSearchDotnet 🧠 (RAG + Graph Full Stack)
+# VectorSearchDotnet 🤠 (RAG + Graph Full Stack - Clean Architecture)
 
-**VectorSearchDotnet** é um projeto completo de **Retrieval-Augmented Generation (RAG)** com IA Generativa, Embeddings, Banco de Grafos e Vetores, 100% em .NET 8 e Clean Architecture.
+**VectorSearchDotnet** é uma stack completa de **Retrieval-Augmented Generation (RAG)** com IA Generativa, Vetores, Grafos e Orquestração semântica — 100% em **.NET 8 Clean Architecture**.
 
 ---
 
-### 🔧 Tecnologias Utilizadas
+## 🔧 Tecnologias Utilizadas
 
-- ✅ .NET 8 (Minimal APIs com Aspire)
-- ✅ Clean Architecture (Domain, Application, Infrastructure, WebAPI)
-- ✅ Docker (Orquestração local completa)
+- ✅ .NET 8 (Minimal APIs + Aspire)
+- ✅ Clean Architecture (Application, Infrastructure, Domain)
+- ✅ Docker (Infra local completa)
 - ✅ Qdrant (Vector Database)
 - ✅ Neo4j (Graph Database)
-- ✅ Azure Functions (Python Embedding Service)
-- ✅ Sentence-Transformers (via Azure Function)
-- ✅ Hugging Face Inference API (Geração RAG com Mistral-7B)
-- ✅ Refit (HTTP client de alto nível)
+- ✅ OnnxRuntime (Embedding local com Sentence-Transformers)
+- ✅ Hugging Face Inference API (Mistral-7B RAG)
 - ✅ MediatR, AutoMapper, Serilog
 - ✅ Testes com xUnit, FluentAssertions e NSubstitute
 
@@ -29,15 +27,23 @@ config:
 ---
 flowchart TD
     A["Usuário"] -->|Faz Pergunta| B["WebAPI (.NET Aspire)"]
-    B -->|Gera Embedding| C["Azure Function<br>(Python + Sentence-Transformers)"]
-    B -->|Realiza Busca Semântica| D["Qdrant"]
-    B -->|Realiza Enriquecimento| E["Neo4j"]
-    B -->|Executa Geração RAG| F["Hugging Face<br>(Mistral-7B)"]
-    F -->|Retorna Resposta| A
+    B -->|Chama Handler| H["MediatR Handlers"]
+    H -->|Orquestra| G["DocumentRetrievalService"]
+    
+    G -->|Busca Vetorial| D["VectorService"]
+    D -->|Gera Embedding| C["OnnxRuntime<br>(Sentence-Transformers ONNX)"]
+    D -->|Consulta Vetores| E["Qdrant"]
+
+    G -->|Enriquece Dados| F["Neo4j"]
+
+    G -->|Retorna documentos enriquecidos| H
+    H -->|Chama RAG| I["Hugging Face<br>Mistral-7B"]
+
+    I -->|Retorna resposta final| A
 
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
     classDef highlight fill:#a0c4ff,stroke:#333,stroke-width:2px;
-    class B,C,D,E,F highlight;
+    class B,C,D,E,F,G,H,I highlight;
 ```
 
 ---
@@ -51,7 +57,7 @@ git clone https://github.com/rafaellarrosa/VectorSearchDotnet.git
 cd VectorSearchDotnet
 ```
 
-Subir toda a stack com Aspire:
+Suba toda a stack com Aspire:
 
 ```bash
 dotnet run --project src/AppHost/AppHost.csproj
@@ -67,59 +73,65 @@ http://localhost:{porta}/swagger
 
 ## 🔗 Integrações Externas
 
-- **Azure Functions (Python)**  
-  - Embedding gerado com `sentence-transformers/all-mpnet-base-v2` localmente
-
+- **Qdrant** (Docker, vetor local)
+- **Neo4j** (Docker, grafo)
 - **Hugging Face Inference API**
-  - Modelo generativo: `mistralai/Mistral-7B-Instruct-v0.1`
-
-- **Qdrant** (Docker com volume persistente)
-
-- **Neo4j** (Docker standalone via Aspire)
+  - Geração de respostas via `mistralai/Mistral-7B-Instruct-v0.1`
 
 ---
 
 ## 🛠️ Endpoints Principais
 
-| Método | Rota       | Função                                 |
-| ------ | ---------- | -------------------------------------- |
-| POST   | /documents | Indexa novo documento (Qdrant + Neo4j) |
-| GET    | /search    | Realiza busca semântica + geração RAG  |
+| Método | Rota       | Função                                   |
+| ------ | ---------- | ---------------------------------------- |
+| POST   | /documents | Indexa novo documento (Vetorial + Grafo) |
+| GET    | /search    | Busca semântica enriquecida + RAG        |
 
 ---
 
-## 🔬 Pipeline do RAG com Graph
+## 🔬 Pipeline RAG Orquestrado
 
-1️⃣ Azure Function gera embedding via Sentence-Transformers  
-2️⃣ Busca vetorial no Qdrant  
-3️⃣ Enriquecimento com relações no Neo4j  
-4️⃣ Gera resposta final com Hugging Face Mistral-7B
+1️⃣ Gera embedding localmente via ONNX (Sentence-Transformers)\
+2️⃣ Busca vetorial no Qdrant\
+3️⃣ Enriquecimento dos resultados com Neo4j\
+4️⃣ Geração de resposta RAG via Hugging Face (Mistral-7B)
+
+---
+
+## 🧱 Camadas principais da solução
+
+- **Handlers (MediatR)** → puro orquestrador de alto nível
+- **DocumentRetrievalService** → centraliza indexação + busca + enrich
+- **VectorService** → orquestra embeddings e busca vetorial
+- **GraphDatabaseService** → integra com Neo4j
+- **EmbeddingService** → roda localmente via OnnxRuntime
+- **IaService** → conecta com Hugging Face para geração
 
 ---
 
 ## 🔮 Extensões futuras
 
-- Upload de PDFs e processamento automático
-- Extração de entidades e criação automática de nós no grafo
-- UI frontend (Blazor ou React)
-- Histórico de consultas e dashboard analítico
-- Melhorias no pipeline com CoT (Chain-of-Thought prompting)
-- Cache de embeddings para otimização
+- Upload de documentos e parsing automático
+- Criação automática de nós relacionados no grafo
+- Implementação Chain-of-Thought (CoT)
+- Painel de histórico de buscas e explicabilidade
+- Implementação de caching de embeddings
 
 ---
 
 ## 📖 Sobre o projeto
 
-Este projeto é uma fundação para:
+Este projeto é base para:
 
-- RAG corporativo (jurídico, financeiro, documentos técnicos)
-- Assistentes de IA contextuais
-- Pesquisa semântica híbrida (embedding + grafo)
+- Sistemas corporativos de RAG
+- Pesquisa semântica híbrida (vetores + grafos)
+- Agentes de IA com raciocínio contextual
 - Sistemas de recomendação explicáveis
 
 ---
 
 ## 👨‍💻 Autor
 
-**Rafael Larrosa**  
+**Rafael Larrosa**\
 [GitHub](https://github.com/rafaellarrosa)
+
