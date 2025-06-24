@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Interfaces;
+using Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Neo4j.Driver;
@@ -72,7 +72,6 @@ namespace Infrastructure.Services.Graph
         {
             if (_driver != null)
             {
-                await _driver.CloseAsync();
                 await _driver.DisposeAsync();
             }
         }

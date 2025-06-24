@@ -1,11 +1,11 @@
 using Application.DTOs;
-using Application.Interfaces;
 using Infrastructure.DTOs.Qdrant;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using Infrastructure.Configurations;
+using Infrastructure.Interfaces;
 
 namespace Infrastructure.Services.Qdrant;
 
@@ -59,13 +59,16 @@ public class QdrantService(HttpClient httpClient, IOptions<QdrantOptions> option
         logger?.LogDebug("Searching similar documents in Qdrant: {Request}", System.Text.Json.JsonSerializer.Serialize(request));
 
         var response = await httpClient.PostAsJsonAsync(url, request);
-
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<QdrantSearchResponseDto>();
 
         logger?.LogInformation("Search completed in Qdrant. Found {Count} results.", result?.Result.Count ?? 0);
 
-        return result?.Result.Select(r => new DocumentResposeDto(Guid.Parse(r.Id), r.Payload?.Text ?? string.Empty)).ToList() ?? new();
+        return result?.Result.Select(r => new DocumentResposeDto(
+            Guid.Parse(r.Id),
+            r.Payload?.Text ?? string.Empty,
+            r.Score
+        )).ToList() ?? [];
     }
 }

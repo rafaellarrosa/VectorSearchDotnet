@@ -1,9 +1,8 @@
 namespace Application.DTOs;
 
-public class DocumentResposeDto(Guid id, string text)
+public class DocumentResposeDto(Guid id, string text, float score)
 {
-
-    public Guid Id { get; private set; } = id;
-
-    public string Text { get; private set; } = text;
+    public Guid Id { get; set; } = id;
+    public string Text { get; set; } = text;
+    public float Score { get; set; } = score;
 }

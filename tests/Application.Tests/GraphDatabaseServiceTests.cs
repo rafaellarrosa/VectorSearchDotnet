@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Application.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
+using FluentAssertions;
 using Xunit;
+using Infrastructure.Services.Graph;
+using NSubstitute;
 
 namespace Application.Tests
 {
@@ -15,8 +15,8 @@ namespace Application.Tests
         public async Task Should_Create_Node_Successfully()
         {
             // Arrange
-            var graphDatabaseService = Substitute.For<IGraphDatabaseService>();
-            var logger = Substitute.For<ILogger<GraphDatabaseServiceTests>>();
+            var logger = Substitute.For<ILogger<Neo4JGraphDatabaseService>>();
+            var graphDatabaseService = Substitute.For<Neo4JGraphDatabaseService>(logger);
 
             var label = "Document";
             var properties = new Dictionary<string, object>
@@ -37,8 +37,8 @@ namespace Application.Tests
         public async Task Should_Log_Error_When_Node_Creation_Fails()
         {
             // Arrange
-            var graphDatabaseService = Substitute.For<IGraphDatabaseService>();
-            var logger = Substitute.For<ILogger<GraphDatabaseServiceTests>>();
+            var logger = Substitute.For<ILogger<Neo4JGraphDatabaseService>>();
+            var graphDatabaseService = Substitute.For<Neo4JGraphDatabaseService>(logger);
 
             var label = "Document";
             var properties = new Dictionary<string, object>
@@ -63,8 +63,8 @@ namespace Application.Tests
         public async Task Should_Query_Nodes_Successfully()
         {
             // Arrange
-            var graphDatabaseService = Substitute.For<IGraphDatabaseService>();
-            var logger = Substitute.For<ILogger<GraphDatabaseServiceTests>>();
+            var logger = Substitute.For<ILogger<Neo4JGraphDatabaseService>>();
+            var graphDatabaseService = Substitute.For<Neo4JGraphDatabaseService>(logger);
 
             var cypherQuery = "MATCH (n:Document) RETURN n";
             var parameters = new Dictionary<string, object>();
