@@ -21,29 +21,17 @@
 ## 🧠 Arquitetura Completa
 
 ```mermaid
----
-config:
-  layout: fixed
----
-flowchart TD
-    A["Usuário"] -->|Faz Pergunta| B["WebAPI (.NET Aspire)"]
-    B -->|Chama Handler| H["MediatR Handlers"]
-    H -->|Orquestra| G["DocumentRetrievalService"]
-    
-    G -->|Busca Vetorial| D["VectorService"]
-    D -->|Gera Embedding| C["OnnxRuntime<br>(Sentence-Transformers ONNX)"]
-    D -->|Consulta Vetores| E["Qdrant"]
-
-    G -->|Enriquece Dados| F["Neo4j"]
-
-    G -->|Retorna documentos enriquecidos| H
-    H -->|Chama RAG| I["Hugging Face<br>Mistral-7B"]
-
-    I -->|Retorna resposta final| A
-
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
-    classDef highlight fill:#a0c4ff,stroke:#333,stroke-width:2px;
-    class B,C,D,E,F,G,H,I highlight;
+flowchart TB
+    A["Usuário"] -- Faz Pergunta --> B["WebAPI (.NET Aspire)"]
+    B -- Chama Handler --> H["MediatR Handlers"]
+    H -- Orquestra --> G["DocumentRetrievalService"]
+    G -- Busca Vetorial --> D["VectorService"]
+    D -- Gera Embedding --> C["OnnxRuntime (Sentence-Transformers ONNX)"]
+    D -- Consulta Vetores --> E["Qdrant"]
+    G -- Enriquece Dados --> F["Neo4j"]
+    G -- Retorna documentos enriquecidos --> H
+    H -- Chama RAG --> I["Hugging Face (Mistral-7B)"]
+    I -- Retorna resposta final --> A
 ```
 
 ---
